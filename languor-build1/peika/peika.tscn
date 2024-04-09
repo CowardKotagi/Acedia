@@ -1,0 +1,107 @@
+[gd_scene load_steps=8 format=3 uid="uid://cgt5jetna5ik6"]
+
+[ext_resource type="Script" path="res://peika/peika.gd" id="1_m7sum"]
+[ext_resource type="PackedScene" uid="uid://ddmqel046fmef" path="res://peika/peikakiller-playercharacter.glb" id="2_j404m"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_mdehl"]
+
+[sub_resource type="SeparationRayShape3D" id="SeparationRayShape3D_cgtcf"]
+length = 0.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_b6y5d"]
+size = Vector3(0.1, 0.1, 1)
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_g0v40"]
+height = 1.0
+radius = 1.0
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_vjald"]
+height = 1.2
+
+[node name="peika" type="CharacterBody3D" groups=["players"]]
+floor_snap_length = 1.0
+script = ExtResource("1_m7sum")
+
+[node name="peikakiller-playercharacter" parent="." instance=ExtResource("2_j404m")]
+
+[node name="Hand" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 1, -0.5)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_mdehl")
+
+[node name="bumpsolver" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.5, -0.698)
+shape = SubResource("SeparationRayShape3D_cgtcf")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="bumpsolver"]
+transform = Transform3D(1, 0, 0, 0, 1, -1.77636e-14, 0, 1.77636e-14, 1, 0, 5.96046e-08, 0.5)
+visible = false
+mesh = SubResource("BoxMesh_b6y5d")
+
+[node name="FPCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.1)
+fov = 90.0
+size = 1.952
+far = 2000.0
+
+[node name="WallDetectionArea" type="ShapeCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_g0v40")
+target_position = Vector3(0, 0, 0)
+
+[node name="HeadDetectionArea" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HeadDetectionArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.50075, 0)
+shape = SubResource("CylinderShape3D_vjald")
+
+[node name="GroundDetectionArea" type="RayCast3D" parent="."]
+target_position = Vector3(0, -0.4, 0)
+hit_from_inside = true
+debug_shape_custom_color = Color(0, 1, 0, 1)
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Area" type="Label" parent="Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -618.0
+offset_top = 279.0
+offset_right = -478.0
+offset_bottom = 309.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "speed
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Speed" type="Label" parent="Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -618.0
+offset_top = 294.0
+offset_right = -478.0
+offset_bottom = 324.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "speed
+"
+horizontal_alignment = 1
+vertical_alignment = 1

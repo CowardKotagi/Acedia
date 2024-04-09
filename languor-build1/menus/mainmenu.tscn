@@ -1,0 +1,73 @@
+[gd_scene load_steps=5 format=3 uid="uid://yheoyckt3dpj"]
+
+[ext_resource type="PackedScene" uid="uid://cvm80vv8xg8l7" path="res://menus/mainmenu/acedia-billboard.glb" id="2_qiu2v"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sojdb"]
+sky_top_color = Color(0, 0, 0, 1)
+sky_horizon_color = Color(0.878431, 0.52549, 0.701961, 1)
+sky_curve = 0.01
+sky_energy_multiplier = 1.05
+ground_bottom_color = Color(0, 0, 0, 1)
+
+[sub_resource type="Sky" id="Sky_yg7vr"]
+sky_material = SubResource("ProceduralSkyMaterial_sojdb")
+
+[sub_resource type="Environment" id="Environment_apjyl"]
+background_mode = 2
+sky = SubResource("Sky_yg7vr")
+volumetric_fog_density = 0.068
+
+[node name="Node3D" type="Node3D"]
+
+[node name="acedia-billboard" parent="." instance=ExtResource("2_qiu2v")]
+transform = Transform3D(1.42658, 0, -0.463526, 0, 1.5, 0, 0.463526, 0, 1.42658, 12, 4, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_apjyl")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.871419, 1.29852e-08, -0.490539, 0.253255, 0.85642, 0.449896, 0.420107, -0.516279, 0.746301, -7.22702, 8.0905, 4.59523)
+light_energy = 0.424
+light_volumetric_fog_energy = 1.115
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 16)
+projection = 1
+fov = 90.0
+size = 35.0
+
+[node name="MenuButtons" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="MainContainer" type="VBoxContainer" parent="MenuButtons"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 421.0
+offset_top = 198.0
+offset_right = 691.0
+offset_bottom = 460.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="START" type="Button" parent="MenuButtons/MainContainer"]
+layout_mode = 2
+text = "START
+"
+
+[node name="Settings" type="Button" parent="MenuButtons/MainContainer"]
+layout_mode = 2
+text = "SETTINGS"
+
+[node name="Quit" type="Button" parent="MenuButtons/MainContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "QUIT"

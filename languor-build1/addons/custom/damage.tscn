@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://cqo72acf571yy"]
+
+[sub_resource type="GDScript" id="GDScript_1rr22"]
+script/source = "extends Node
+var parent
+
+func damage(damage: int):
+	parent = get_parent()
+	print(parent)
+"
+
+[node name="Damage" type="Node"]
+script = SubResource("GDScript_1rr22")

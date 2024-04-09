@@ -1,0 +1,68 @@
+[gd_scene load_steps=9 format=3 uid="uid://d1cb5ot0lqn6e"]
+
+[ext_resource type="Script" path="res://maps/lab/enemy_base.gd" id="1_w1kp5"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_dlpwu"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_mclkd"]
+radial_segments = 4
+rings = 2
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7hvnp"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_qam7y"]
+height = 1.8
+radius = 1.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8dj3a"]
+size = Vector3(24, 4, 32)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uqn7j"]
+albedo_color = Color(0.988235, 0, 0.298039, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_oemh8"]
+material = SubResource("StandardMaterial3D_uqn7j")
+
+[node name="EnemyBase" type="CharacterBody3D" groups=["npc"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+script = ExtResource("1_w1kp5")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_dlpwu")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0, 0.5, -0.5)
+mesh = SubResource("CapsuleMesh_mclkd")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_7hvnp")
+
+[node name="HitDetectionArea" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HitDetectionArea"]
+shape = SubResource("CylinderShape3D_qam7y")
+
+[node name="Sight" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Sight"]
+transform = Transform3D(4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0.05, -66.2451)
+shape = SubResource("BoxShape3D_8dj3a")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_desired_distance = 2.0
+target_desired_distance = 2.0
+path_max_distance = 100.01
+debug_path_custom_point_size = 6.0
+
+[node name="RayCast3D" type="RayCast3D" parent="."]
+target_position = Vector3(0, 0, -100)
+
+[node name="TestBall" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.151047, 4.27143, 0.290241)
+top_level = true
+visible = false
+cast_shadow = 0
+gi_mode = 0
+mesh = SubResource("SphereMesh_oemh8")
+
+[connection signal="body_entered" from="HitDetectionArea" to="." method="_on_hit_detection_area_body_entered"]

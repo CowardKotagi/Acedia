@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://cbij0doyl5625"]
+
+[sub_resource type="Environment" id="Environment_apjyl"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_apjyl")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.871419, 1.29852e-08, -0.490539, 0.253255, 0.85642, 0.449896, 0.420107, -0.516279, 0.746301, -7.22702, 8.0905, 4.59523)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7.30368)
+fov = 90.0

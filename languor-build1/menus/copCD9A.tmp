@@ -1,0 +1,505 @@
+[gd_scene load_steps=5 format=3 uid="uid://5bamdnamh83e"]
+
+[ext_resource type="FontFile" uid="uid://d1qqf1w8apq0w" path="res://BarMKode-Inverse.ttf" id="1_c8dt0"]
+[ext_resource type="LabelSettings" uid="uid://1oyxx8ys1m6d" path="res://menus/font.res" id="3_qkye6"]
+[ext_resource type="Script" path="res://menus/scroll_label.gd" id="4_rx7bu"]
+
+[sub_resource type="GDScript" id="GDScript_yjpqq"]
+script/source = "extends Control
+var settings_file = ConfigFile.new()
+var vsync: int = 0
+var audio: Vector3 = Vector3(70.0, 70.0, 70.0)
+
+var is_paused: bool = false:
+	set = set_paused
+
+@onready var resolution_option_button = get_node(\"%Resolution_Option\")
+@onready var options_container = $OptionContainer
+@onready var main_container = $MainContainer
+
+@onready var resolution_button: OptionButton = $OptionContainer/TabContainer/Video/Resolution_Option
+
+
+
+func _physics_process(delta):
+	print(resolution_button.get_item_index())
+	if is_paused:
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	else:
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(\"pause\"):
+		is_paused = !is_paused
+
+func set_paused(value: bool) -> void:
+	is_paused = value
+	visible = is_paused
+
+#MAIN BUTTONS
+func _on_resume_pressed():
+	is_paused = false
+	hide()
+
+func _get_resolution(index) -> Vector2i:
+	var resolution_arr = resolution_option_button.get_item_text(index).split(\"x\")
+	return Vector2i(int(resolution_arr[0]), int(resolution_arr[1]))
+
+
+func _check_resolution(resolution: Vector2i):
+	for i in resolution_option_button.get_item_count():
+		if _get_resolution(i) == resolution:
+			
+			return i
+
+func _first_time() -> void:
+	DisplayServer.window_set_size(DisplayServer.screen_get_size())
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MAXIMIZED)
+	DisplayServer.window_set_vsync_mode(vsync)
+	resolution_option_button.select(_check_resolution(DisplayServer.screen_get_size()))
+	# -- Video
+	settings_file.set_value(\"VIDEO\", \"Resolution\", _get_resolution(resolution_option_button.get_index()))
+	settings_file.set_value(\"VIDEO\", \"vsync\", vsync)
+	settings_file.set_value(\"VIDEO\", \"Window Mode\", _get_resolution(resolution_option_button.get_index()))
+	settings_file.set_value(\"VIDEO\", \"Color blind\", _get_resolution(resolution_option_button.get_index()))
+	settings_file.set_value(\"VIDEO\", \"Bhop Toggle\", Global.hold_jump_bunny_hop_enabled)
+	settings_file.set_value(\"VIDEO\", \"Wallkick Toggle\", Global.hold_jump_wall_kick_enabled)
+	# -- audio
+	settings_file.set_value(\"audio\", \"General\", audio.x)
+	settings_file.set_value(\"audio\", \"Music\", audio.y)
+	settings_file.set_value(\"audio\", \"SFX\", audio.z)
+
+	settings_file.save(\"res://settings.cfg\")
+
+
+func _load_settings():
+	if settings_file.load(\"res://settings.cfg\") != OK:
+		_first_time()
+	else:
+		pass#option_button.selected = option_button.get_item_index
+
+
+func _save_settings() -> void:
+	# -- Video
+	settings_file.set_value(\"VIDEO\", \"Resolution\", _get_resolution(resolution_option_button.get_index()))
+	settings_file.set_value(\"VIDEO\", \"vsync\", vsync)
+	settings_file.set_value(\"VIDEO\", \"Window Mode\", _get_resolution(resolution_option_button.get_index()))
+	settings_file.set_value(\"VIDEO\", \"Color blind\", _get_resolution(resolution_option_button.get_index()))
+	settings_file.set_value(\"VIDEO\", \"Bhop Toggle\", Global.hold_jump_bunny_hop_enabled)
+	settings_file.set_value(\"VIDEO\", \"Wallkick Toggle\", Global.hold_jump_wall_kick_enabled)
+	# -- audio
+	settings_file.set_value(\"audio\", \"General\", audio.x)
+	settings_file.set_value(\"audio\", \"Music\", audio.y)
+	settings_file.set_value(\"audio\", \"SFX\", audio.z)
+
+	settings_file.save(\"res://settings.cfg\")
+
+
+func _ready():
+	_load_settings()
+	resolution_option_button.select(_check_resolution(DisplayServer.screen_get_size()))
+
+
+func _on_start_button_pressed():
+	is_paused = false
+	print('pressed')
+	hide()
+
+
+func _on_option_button_pressed():
+	options_container.visible = true
+	main_container.visible = false
+
+
+func _on_quit_button_pressed():
+	get_tree().quit()
+
+# VIDEO TAB
+
+func _on_resolution_optionbutton_item_selected(index):
+	DisplayServer.window_set_size(_get_resolution(index))
+
+
+func _on_window_mode_optionbutton_item_selected(index):
+	DisplayServer.window_set_mode(index)
+	print(index)
+
+func _on_vsync_option_button_item_selected(index):
+	# check the documentation about vsync : https://docs.godotengine.org/en/stable/classes/class_displayserver.html#enum-displayserver-vsyncmode
+	vsync = index
+
+func _on_bhop_toggle_toggled(toggle):
+	Global.hold_jump_bunny_hop_enabled = toggle
+
+func _on_wallkick_toggle_toggled(toggle):
+	Global.hold_jump_wall_kick_enabled = toggle
+
+# AUDIO TAB
+
+
+func _on_general_h_scroll_bar_value_changed(value):
+	audio.x = value
+
+
+func _on_music_h_scroll_bar_value_changed(value):
+	audio.y = value
+
+
+func _on_sfx_h_scroll_bar_value_changed(value):
+	audio.z = value
+
+
+# -- Save and Exit buttons
+
+
+func _on_return_button_pressed():
+	main_container.visible = true
+	options_container.visible = false
+
+
+func _on_apply_button_pressed():
+	main_container.visible = true
+	options_container.visible = false
+	_save_settings()
+
+
+
+"
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+size_flags_stretch_ratio = 0.0
+script = SubResource("GDScript_yjpqq")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+color = Color(0, 0, 0, 0.427451)
+
+[node name="MainContainer" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -50.0
+offset_right = 120.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PAUSED" type="Label" parent="MainContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_c8dt0")
+theme_override_font_sizes/font_size = 128
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="Resume" type="Button" parent="MainContainer"]
+layout_mode = 2
+text = "RESUME"
+
+[node name="Options" type="Button" parent="MainContainer"]
+layout_mode = 2
+text = "SETTINGS"
+
+[node name="Quit" type="Button" parent="MainContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "QUIT"
+
+[node name="OptionContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.0555556
+anchor_right = 0.944444
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="TabContainer" type="TabContainer" parent="OptionContainer"]
+custom_minimum_size = Vector2(0, 500)
+layout_mode = 2
+tab_alignment = 1
+
+[node name="Video" type="TabBar" parent="OptionContainer/TabContainer"]
+layout_mode = 2
+size_flags_stretch_ratio = 0.0
+tab_alignment = 1
+
+[node name="General_Label" type="Label" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 16.7165
+offset_top = 9.0
+offset_right = 85.7165
+offset_bottom = 38.0
+text = "General"
+label_settings = ExtResource("3_qkye6")
+
+[node name="Resolution_Label" type="Label" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 57.0286
+offset_right = 107.0
+offset_bottom = 83.0286
+text = "Resolution"
+
+[node name="Resolution_Option" type="OptionButton" parent="OptionContainer/TabContainer/Video"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 16.7427
+offset_top = 87.3122
+offset_right = 200.743
+offset_bottom = 118.313
+item_count = 10
+popup/item_0/text = "640x480"
+popup/item_0/id = 0
+popup/item_1/text = "800x600"
+popup/item_1/id = 1
+popup/item_2/text = "1024x768"
+popup/item_2/id = 2
+popup/item_3/text = "1280x720"
+popup/item_3/id = 3
+popup/item_4/text = "1366x768"
+popup/item_4/id = 4
+popup/item_5/text = "1600x900"
+popup/item_5/id = 5
+popup/item_6/text = "1920x1080"
+popup/item_6/id = 6
+popup/item_7/text = "2560x1440"
+popup/item_7/id = 7
+popup/item_8/text = "3840x2160"
+popup/item_8/id = 8
+popup/item_9/text = "7680x4320"
+popup/item_9/id = 9
+
+[node name="WindowMode_Label" type="Label" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 272.0
+offset_top = 57.0286
+offset_right = 392.0
+offset_bottom = 83.0286
+text = "Window Mode"
+
+[node name="WindowMode_Option" type="OptionButton" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 273.0
+offset_top = 87.0
+offset_right = 464.0
+offset_bottom = 119.0
+item_count = 3
+selected = 0
+popup/item_0/text = "Windowed"
+popup/item_0/id = 0
+popup/item_1/text = "Borderless"
+popup/item_1/id = 3
+popup/item_2/text = "Fullscreen"
+popup/item_2/id = 4
+
+[node name="Vsync_Label" type="Label" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 520.0
+offset_top = 57.0286
+offset_right = 565.0
+offset_bottom = 83.0286
+text = "Vsync"
+
+[node name="Vsync_Option" type="OptionButton" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 520.739
+offset_top = 84.3288
+offset_right = 704.739
+offset_bottom = 116.329
+item_count = 4
+selected = 0
+popup/item_0/text = "Off"
+popup/item_0/id = 0
+popup/item_1/text = "Normal"
+popup/item_1/id = 1
+popup/item_2/text = "Adaptative"
+popup/item_2/id = 2
+popup/item_3/text = "MailBox"
+popup/item_3/id = 3
+
+[node name="Color_blind" type="Label" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 768.0
+offset_top = 57.0286
+offset_right = 901.0
+offset_bottom = 83.0286
+text = "Color blind mode"
+
+[node name="ColorBlind_Option" type="OptionButton" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 768.737
+offset_top = 84.4093
+offset_right = 944.737
+offset_bottom = 115.41
+item_count = 2
+selected = 0
+popup/item_0/text = "OFF"
+popup/item_0/id = 0
+popup/item_1/text = "get fucked"
+popup/item_1/id = 3
+
+[node name="Bhop" type="Label" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 169.0
+offset_right = 116.0
+offset_bottom = 195.0
+text = "Auto Bhop
+"
+
+[node name="Bhop_Toggle" type="CheckButton" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 169.0
+offset_right = 193.0
+offset_bottom = 200.0
+text = "
+"
+
+[node name="Wallkick" type="Label" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 169.0
+offset_right = 386.0
+offset_bottom = 195.0
+text = "Auto Wallkick
+"
+
+[node name="Wallkick_Toggle" type="CheckButton" parent="OptionContainer/TabContainer/Video"]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 169.0
+offset_right = 465.0
+offset_bottom = 200.0
+
+[node name="Sound" type="TabBar" parent="OptionContainer/TabContainer"]
+visible = false
+layout_mode = 2
+tab_alignment = 1
+
+[node name="General_Label" type="Label" parent="OptionContainer/TabContainer/Sound"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 46.0
+offset_right = 48.0
+offset_bottom = 69.0
+text = "General volume :"
+
+[node name="General_HScrollBar" type="HScrollBar" parent="OptionContainer/TabContainer/Sound"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 78.0
+offset_right = 458.0
+offset_bottom = 94.0
+value = 70.0
+rounded = true
+
+[node name="Scroll_Label" type="Label" parent="OptionContainer/TabContainer/Sound/General_HScrollBar"]
+layout_mode = 0
+offset_left = 456.0
+offset_top = -5.0
+offset_right = 489.0
+offset_bottom = 21.0
+text = "70%"
+script = ExtResource("4_rx7bu")
+
+[node name="Music_Label" type="Label" parent="OptionContainer/TabContainer/Sound"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 99.0
+offset_right = 142.0
+offset_bottom = 125.0
+text = "Music volume :"
+
+[node name="Music_HScrollBar" type="HScrollBar" parent="OptionContainer/TabContainer/Sound"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 124.0
+offset_right = 458.0
+offset_bottom = 140.0
+value = 67.0
+rounded = true
+
+[node name="Scroll_Label" type="Label" parent="OptionContainer/TabContainer/Sound/Music_HScrollBar"]
+layout_mode = 0
+offset_left = 456.0
+offset_top = -5.0
+offset_right = 489.0
+offset_bottom = 21.0
+text = "67%"
+script = ExtResource("4_rx7bu")
+
+[node name="SFX_Label" type="Label" parent="OptionContainer/TabContainer/Sound"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 146.0
+offset_right = 142.0
+offset_bottom = 172.0
+text = "SFX volume :"
+
+[node name="SFX_HScrollBar" type="HScrollBar" parent="OptionContainer/TabContainer/Sound"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 171.0
+offset_right = 458.0
+offset_bottom = 187.0
+value = 67.0
+rounded = true
+
+[node name="Scroll_Label" type="Label" parent="OptionContainer/TabContainer/Sound/SFX_HScrollBar"]
+layout_mode = 0
+offset_left = 456.0
+offset_top = -5.0
+offset_right = 489.0
+offset_bottom = 21.0
+text = "67%"
+script = ExtResource("4_rx7bu")
+
+[node name="Container" type="HBoxContainer" parent="OptionContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+alignment = 1
+
+[node name="Apply_button" type="Button" parent="OptionContainer/Container"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+text = "Apply
+"
+
+[node name="Return_button" type="Button" parent="OptionContainer/Container"]
+layout_mode = 2
+text = "Return
+"
+
+[connection signal="pressed" from="MainContainer/Resume" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="MainContainer/Options" to="." method="_on_option_button_pressed"]
+[connection signal="pressed" from="MainContainer/Quit" to="." method="_on_quit_button_pressed"]
+[connection signal="item_selected" from="OptionContainer/TabContainer/Video/Resolution_Option" to="." method="_on_resolution_optionbutton_item_selected"]
+[connection signal="item_selected" from="OptionContainer/TabContainer/Video/WindowMode_Option" to="." method="_on_window_mode_optionbutton_item_selected"]
+[connection signal="item_selected" from="OptionContainer/TabContainer/Video/Vsync_Option" to="." method="_on_vsync_option_button_item_selected"]
+[connection signal="toggled" from="OptionContainer/TabContainer/Video/Bhop_Toggle" to="." method="_on_bhop_toggle_toggled"]
+[connection signal="toggled" from="OptionContainer/TabContainer/Video/Wallkick_Toggle" to="." method="_on_wallkick_toggle_toggled"]
+[connection signal="value_changed" from="OptionContainer/TabContainer/Sound/General_HScrollBar" to="." method="_on_general_h_scroll_bar_value_changed"]
+[connection signal="value_changed" from="OptionContainer/TabContainer/Sound/General_HScrollBar" to="OptionContainer/TabContainer/Sound/General_HScrollBar/Scroll_Label" method="_on_h_scroll_bar_value_changed"]
+[connection signal="value_changed" from="OptionContainer/TabContainer/Sound/Music_HScrollBar" to="." method="_on_music_h_scroll_bar_value_changed"]
+[connection signal="value_changed" from="OptionContainer/TabContainer/Sound/Music_HScrollBar" to="OptionContainer/TabContainer/Sound/Music_HScrollBar/Scroll_Label" method="_on_h_scroll_bar_value_changed"]
+[connection signal="value_changed" from="OptionContainer/TabContainer/Sound/SFX_HScrollBar" to="." method="_on_sfx_h_scroll_bar_value_changed"]
+[connection signal="value_changed" from="OptionContainer/TabContainer/Sound/SFX_HScrollBar" to="OptionContainer/TabContainer/Sound/SFX_HScrollBar/Scroll_Label" method="_on_h_scroll_bar_value_changed"]
+[connection signal="pressed" from="OptionContainer/Container/Apply_button" to="." method="_on_apply_button_pressed"]
+[connection signal="pressed" from="OptionContainer/Container/Return_button" to="." method="_on_return_button_pressed"]

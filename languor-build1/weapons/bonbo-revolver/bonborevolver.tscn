@@ -1,0 +1,102 @@
+[gd_scene load_steps=6 format=3 uid="uid://bubfj4i45hj1v"]
+
+[ext_resource type="PackedScene" uid="uid://o1n5mx4ksdi6" path="res://weapons/bonbo-revolver/bonbo-revolver.glb" id="1_ir6h7"]
+[ext_resource type="AudioStream" uid="uid://qw4gdyjkll7t" path="res://weapons/bonbo-revolver/bonbo-revolver-shoot.wav" id="2_4ks0e"]
+
+[sub_resource type="GDScript" id="GDScript_8i0ls"]
+script/source = "extends Node3D
+
+#audio
+@onready var bonbo_revolver_shoot_sound = $BonboRevolverShootSound
+
+var bonbo_revolver_scene = preload(\"res://weapons/bonbo-revolver/bonborevolver.tscn\")
+
+@onready var wielder: CharacterBody3D = null
+@onready var hand: Node3D = null
+@onready var collision: CollisionShape3D = $CollisionShape3D
+@onready var hitscan_raycast: RayCast3D = $RayCast3D
+
+var cocked = false
+var loaded = true
+var ammo: int = 6
+
+var damage:int = 120
+var ammo_capacity: int = 6
+var accuracy: float = 1
+
+func _ready():
+	if get_parent().name == 'Hand':
+		hand = self.get_parent()
+		wielder = hand.get_parent()
+		collision.disabled = true
+		self.freeze = true
+	else:
+		hand = null
+		wielder = null
+		collision.disabled = false
+		self.freeze = false
+
+func _input(_event):
+	if hand == null:
+		return
+	if Input.is_action_pressed(\"action1\"):
+			shoot()
+	if Input.is_action_just_pressed(\"action2\"):
+			cocked = !cocked
+
+func _on_area_3d_body_entered(body):
+	if body.is_in_group('players') and hand == null:
+		var bonbo_revolver_scene_instance = bonbo_revolver_scene.instantiate()
+		body.hand.add_child(bonbo_revolver_scene_instance)
+		self.queue_free()
+
+func shoot():
+	if cocked == true:
+		var collider = hitscan_raycast.get_collider()
+		if collider != null and collider.is_in_group('npc'):
+			collider.health -= damage
+		print(hitscan_raycast.get_collider())
+		cocked = false
+		bonbo_revolver_shoot_sound.play()
+	else:
+		print(\"cock yo hamma\")
+
+func unload_gun():
+	if loaded == true:
+		ammo = 0
+
+func load_gun():
+	if loaded == false: 
+		ammo = 6
+"
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_sl3hx"]
+size = Vector3(0.08, 0.417922, 0.606146)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_msx47"]
+
+[node name="Bonborevolver" type="RigidBody3D"]
+collision_layer = 2
+freeze = true
+script = SubResource("GDScript_8i0ls")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0286725, -0.00172475)
+shape = SubResource("BoxShape3D_sl3hx")
+
+[node name="bonbo-revolver" parent="." instance=ExtResource("1_ir6h7")]
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("BoxShape3D_msx47")
+
+[node name="RayCast3D" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.105, 0)
+target_position = Vector3(0, 0, -150)
+
+[node name="BonboRevolverShootSound" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.103822, 0.0505287)
+stream = ExtResource("2_4ks0e")
+
+[connection signal="body_entered" from="Area3D" to="." method="_on_area_3d_body_entered"]

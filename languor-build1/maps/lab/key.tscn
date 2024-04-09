@@ -1,0 +1,45 @@
+[gd_scene load_steps=6 format=3 uid="uid://dy2comcing3ek"]
+
+[sub_resource type="GDScript" id="GDScript_b7xat"]
+script/source = "extends RigidBody3D
+
+func _on_area_3d_body_entered(body):
+	if body.is_in_group('players'):
+		get_tree().quit()
+"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3p1ju"]
+shading_mode = 2
+albedo_color = Color(0.552941, 0.552941, 0, 1)
+emission_enabled = true
+emission = Color(0.552941, 0.552941, 0, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_m61vs"]
+material = SubResource("StandardMaterial3D_3p1ju")
+radius = 0.25
+height = 1.0
+radial_segments = 8
+rings = 2
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kye2m"]
+size = Vector3(0.5, 1, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ns06b"]
+
+[node name="Key" type="RigidBody3D" groups=["winnerkey"]]
+script = SubResource("GDScript_b7xat")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_m61vs")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_kye2m")
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("BoxShape3D_ns06b")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_entered" from="Area3D" to="." method="_on_area_3d_body_entered"]
